@@ -18,11 +18,12 @@ interface DataPoint {
   co2: number;
   device_name: string;
   timestamp: string;
+  adjust_co2: number;
 }
 
 interface Props {
   data: DataPoint[];
-  selectParam: "temp" | "humid" | "co2";
+  selectParam: "temp" | "humid" | "co2" | "adjust_co2";
 }
 
 export default function TempLineChart({ data, selectParam }: Props) {
@@ -46,6 +47,8 @@ export default function TempLineChart({ data, selectParam }: Props) {
           ? d.temp
           : selectParam === "humid"
           ? d.humidity
+          : selectParam === "adjust_co2"
+          ? d.adjust_co2
           : d.co2;
     });
     return Object.values(grouped);

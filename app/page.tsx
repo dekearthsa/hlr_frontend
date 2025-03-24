@@ -10,7 +10,7 @@ const Home = () => {
   const fetchFunc = async () => {
     try {
       const d = new Date();
-      const day = d.getDay();
+      const day = d.getDate();
       const month = d.getMonth() + 1;
       const year = d.getFullYear();
       console.log(day + " " + month + " " + year);
@@ -34,8 +34,10 @@ const Home = () => {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <TempLineChart data={hlrData} selectParam="co2" />
+        <TempLineChart data={hlrData} selectParam="adjust_co2" />
       )}
+      <br />
+      {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="co2" />}
       <br />
       {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="humid" />}
       <br />
