@@ -2,8 +2,6 @@
 
 import { useEffect, useState } from "react";
 import TempLineChart from "./components/TimelineChart";
-import ApexLineChart from "./components/ApexLineChart";
-import ChartLine from "./components/ChartLine";
 import axios from "axios";
 
 interface DataPoint {
@@ -13,7 +11,7 @@ interface DataPoint {
   co2: number;
   device_name: string;
   timestamp: string;
-  adjust_co2: number;
+  adjust_co2: string;
 }
 
 const Home = () => {
@@ -45,7 +43,7 @@ const Home = () => {
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <h1 className="text-xl font-bold mb-4">Dashboard HLR</h1>
       {loading ? (
-        <p></p>
+        <p>Loading....</p>
       ) : (
         <TempLineChart data={hlrData} selectParam="adjust_co2" />
       )}
@@ -55,8 +53,6 @@ const Home = () => {
       {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="humid" />}
       <br />
       {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="temp" />}
-
-   
 
       {/* {hlrData.length === 0 ? (
         <p>Loading...</p>
