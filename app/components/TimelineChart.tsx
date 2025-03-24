@@ -8,6 +8,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  CartesianGrid,
 } from "recharts";
 import { useMemo, useState } from "react";
 
@@ -18,11 +19,13 @@ interface DataPoint {
   co2: number;
   device_name: string;
   timestamp: string;
-  adjust_co2: number;
+  adjust_co2: string;
 }
+
+// รูปแบบข้อมูลของ Object หลัง grouped
 type GroupedEntry = {
   timestamp: string;
-  [device_name: string]: string | number; // เช่น tongdy_1: 36.5
+  [deviceName: string]: number | string; // เช่น { timestamp: "07:00:00", tongdy_1: 500 }
 };
 
 interface Props {
@@ -31,37 +34,107 @@ interface Props {
 }
 
 export default function TempLineChart({ data, selectParam }: Props) {
-  const [startTime, setStartTime] = useState("00:00");
-  const [endTime, setEndTime] = useState("23:59");
+  // State สำหรับเลือกระยะเวลา
+  const [startTime, setStartTime] = useState("08:00");
+  const [endTime, setEndTime] = useState("17:00");
 
-  const filteredData = useMemo(() => {
-    return data.filter((d) => {
-      const t = new Date(d.timestamp).toTimeString().slice(0, 5); // HH:mm
-      return t >= startTime && t <= endTime;
-    });
-  }, [data, startTime, endTime]);
+  // 1) สร้างข้อมูลกราฟพร้อม Interpolate
+  const interpolatedData = useMemo(() => {
+    // 1.1) สร้าง array ของ timestamp (string) ทั้งหมดแบบ unique
+    //      เช่น "7:05:03 AM" บ้าง หรือ "10:21:00 AM" บ้าง
+    const allTimestamps = Array.from(
+      new Set(data.map((d) => new Date(d.timestamp).toLocaleTimeString()))
+    ).sort();
 
-  const formattedData = useMemo(() => {
-    const grouped: { [timestamp: string]: GroupedEntry } = {};
-    filteredData.forEach((d) => {
+    // 1.2) สร้าง object เพื่อเก็บข้อมูลแต่ละอุปกรณ์ตาม timestamp
+    const deviceData: { [device: string]: { [ts: string]: number } } = {};
+    data.forEach((d) => {
       const ts = new Date(d.timestamp).toLocaleTimeString();
-      if (!grouped[ts]) grouped[ts] = { timestamp: ts };
-      grouped[ts][d.device_name] =
+      const value =
         selectParam === "temp"
           ? d.temp
           : selectParam === "humid"
           ? d.humidity
           : selectParam === "adjust_co2"
-          ? d.adjust_co2
+          ? parseInt(d.adjust_co2)
           : d.co2;
+      if (selectParam === "adjust_co2") {
+        console.log(value);
+      }
+      if (!deviceData[d.device_name]) {
+        deviceData[d.device_name] = {};
+      }
+      deviceData[d.device_name][ts] = value;
     });
-    return Object.values(grouped);
-  }, [filteredData, selectParam]);
+    const result: GroupedEntry[] = allTimestamps.map((ts) => {
+      const entry: GroupedEntry = { timestamp: ts };
+      ["tongdy_1", "tongdy_2", "tongdy_3", "tongdy_4"].forEach((device) => {
+        const perDeviceData = deviceData[device] || {};
+        if (perDeviceData[ts] !== undefined) {
+          // ถ้ามีค่าตรง ๆ
+          entry[device] = perDeviceData[ts];
+        } else {
+          // หาค่าก่อนหน้า-ถัดไป เพื่อ Interpolate
+          const timestamps = Object.keys(perDeviceData).sort();
+          const prevTs = timestamps.filter((t) => t < ts).pop();
+          const nextTs = timestamps.find((t) => t > ts);
+
+          if (prevTs && nextTs) {
+            // กรณีมีทั้งก่อนหน้าและถัดไป → Interpolate
+            if (prevTs === nextTs) {
+              entry[device] = perDeviceData[prevTs];
+            } else {
+              const prevValue = perDeviceData[prevTs];
+              const nextValue = perDeviceData[nextTs];
+              const timeDiff =
+                new Date(`1970-01-01 ${nextTs}`).getTime() -
+                new Date(`1970-01-01 ${prevTs}`).getTime();
+              const currentDiff =
+                new Date(`1970-01-01 ${ts}`).getTime() -
+                new Date(`1970-01-01 ${prevTs}`).getTime();
+              if (timeDiff !== 0) {
+                entry[device] =
+                  prevValue +
+                  (nextValue - prevValue) * (currentDiff / timeDiff);
+              } else {
+                entry[device] = prevValue;
+              }
+            }
+          } else if (prevTs) {
+            entry[device] = perDeviceData[prevTs];
+          } else if (nextTs) {
+            entry[device] = perDeviceData[nextTs];
+          }
+        }
+      });
+
+      return entry;
+    });
+
+    return result;
+  }, [data, selectParam]);
+
+  // 2) กรองข้อมูลตามช่วงเวลา startTime - endTime
+  const filteredData = useMemo(() => {
+    // สมมติ interpolatedData[].timestamp = "7:05:03 AM"
+    // เราจะแปลงเป็น HH:mm แบบ 24 ชม. ก่อนเทียบ
+    // เพื่อให้เทียบกับ "07:00" - "08:59" ได้ง่าย
+    return interpolatedData.filter((entry) => {
+      const dateObj = new Date(`1970-01-01 ${entry.timestamp}`);
+      const hh = String(dateObj.getHours()).padStart(2, "0");
+      const mm = String(dateObj.getMinutes()).padStart(2, "0");
+      const hhmm = `${hh}:${mm}`;
+      return hhmm >= startTime && hhmm <= endTime;
+    });
+  }, [interpolatedData, startTime, endTime]);
 
   return (
     <div className="w-full flex flex-col items-center gap-4">
-      <div className="text-center text-3xl mb-10">{selectParam}</div>
-      <div className="flex gap-4 items-center">
+      {/* หัวข้อ */}
+      <div className="text-center text-3xl mb-4">{selectParam}</div>
+
+      {/* ช่องเลือก Start-End Time */}
+      <div className="flex gap-4 items-center mb-4">
         <label>
           Start Time:
           <input
@@ -82,8 +155,10 @@ export default function TempLineChart({ data, selectParam }: Props) {
         </label>
       </div>
 
+      {/* ส่วนกราฟ */}
       <ResponsiveContainer width="100%" height={400}>
-        <LineChart data={formattedData}>
+        <LineChart data={filteredData}>
+          <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="timestamp" />
           <YAxis
             label={{
@@ -92,6 +167,8 @@ export default function TempLineChart({ data, selectParam }: Props) {
                   ? "Temp (°C)"
                   : selectParam === "humid"
                   ? "Humidity (%)"
+                  : selectParam === "adjust_co2"
+                  ? "CO₂ (ppm)"
                   : "CO₂ (ppm)",
               angle: -90,
               position: "insideLeft",
