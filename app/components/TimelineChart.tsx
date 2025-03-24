@@ -20,6 +20,10 @@ interface DataPoint {
   timestamp: string;
   adjust_co2: number;
 }
+type GroupedEntry = {
+  timestamp: string;
+  [device_name: string]: string | number; // เช่น tongdy_1: 36.5
+};
 
 interface Props {
   data: DataPoint[];
@@ -38,7 +42,7 @@ export default function TempLineChart({ data, selectParam }: Props) {
   }, [data, startTime, endTime]);
 
   const formattedData = useMemo(() => {
-    const grouped: { [timestamp: string]: any } = {};
+    const grouped: { [timestamp: string]: GroupedEntry } = {};
     filteredData.forEach((d) => {
       const ts = new Date(d.timestamp).toLocaleTimeString();
       if (!grouped[ts]) grouped[ts] = { timestamp: ts };

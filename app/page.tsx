@@ -3,8 +3,19 @@
 import { useEffect, useState } from "react";
 import TempLineChart from "./components/TimelineChart";
 import axios from "axios";
+
+interface DataPoint {
+  id: number;
+  temp: number;
+  humidity: number;
+  co2: number;
+  device_name: string;
+  timestamp: string;
+  adjust_co2: number;
+}
+
 const Home = () => {
-  const [hlrData, setHlrData] = useState<any[]>([]);
+  const [hlrData, setHlrData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchFunc = async () => {
