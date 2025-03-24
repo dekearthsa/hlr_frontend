@@ -5,18 +5,23 @@ import TempLineChart from "./components/TimelineChart";
 import axios from "axios";
 const Home = () => {
   const [hlrData, setHlrData] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   const fetchFunc = async () => {
     try {
+      const d = new Date();
+      const day = d.getDay();
+      const month = d.getMonth() + 1;
+      const year = d.getFullYear();
+      console.log(day + " " + month + " " + year);
       const dataNow = await axios.get(
-        "https://bkkcodedevearthregisterdemobkk.work/api/selected/2025/03/20"
+        `https://bkkcodedevearthregisterdemobkk.work/api/selected/${year}/${month}/${day}`
       );
       setHlrData(dataNow.data);
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
