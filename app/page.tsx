@@ -17,6 +17,9 @@ interface DataPoint {
 const Home = () => {
   const [hlrData, setHlrData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isYear, setYear] = useState("");
+  const [isMonth, setMonth] = useState("");
+  const [isDate, setDate] = useState("");
 
   const fetchFunc = async () => {
     try {
@@ -29,11 +32,23 @@ const Home = () => {
         `https://bkkcodedevearthregisterdemobkk.work/api/selected/${year}/${month}/${day}`
       );
       setHlrData(dataNow.data);
+      setYear(String(year));
+      setMonth(String(month));
+      setDate(String(day));
     } catch (err) {
       console.error("Error fetching data:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlerFetchData = async () => {
+    setLoading(true);
+    const dataNow = await axios.get(
+      `https://bkkcodedevearthregisterdemobkk.work/api/selected/${isYear}/${isMonth}/${isDate}`
+    );
+    setHlrData(dataNow.data);
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -42,6 +57,89 @@ const Home = () => {
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <h1 className="text-xl font-bold mb-4">Dashboard HLR</h1>
+      {loading ? (
+        <div className="z-[-1] w-full opacity-50">
+          <div className="flex justify-around w-[80%]  m-auto">
+            <div>
+              <label className="mr-3">Year</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isYear}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mr-3">Month</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isMonth}
+                onChange={(e) => setMonth(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mr-3">date</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isDate}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="w-full m-auto flex justify-center">
+            <button
+              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700  mt-10"
+              onClick={handlerFetchData}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="w-[100%]">
+          <div className="flex justify-around w-[80%] m-auto">
+            <div>
+              <label className="mr-3">Year</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isYear}
+                onChange={(e) => setYear(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mr-3">Month</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isMonth}
+                onChange={(e) => setMonth(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="mr-3">date</label>
+              <input
+                className="bg-gray-800 rounded-lg h-[40px]"
+                type="number"
+                value={isDate}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </div>
+          </div>
+          <div className="w-full m-auto flex justify-center">
+            <button
+              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700 mt-10"
+              onClick={handlerFetchData}
+            >
+              Submit
+            </button>
+          </div>
+        </div>
+      )}
+
+      <br />
       {loading ? (
         <p>Loading....</p>
       ) : (
@@ -53,32 +151,8 @@ const Home = () => {
       {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="humid" />}
       <br />
       {loading ? <p></p> : <TempLineChart data={hlrData} selectParam="temp" />}
-
-      {/* {hlrData.length === 0 ? (
-        <p>Loading...</p>
-      ) : (
-        <>
-          <ApexLineChart data={hlrData} selectParam="temp" />
-          <ApexLineChart data={hlrData} selectParam="co2" />
-        </>
-      )} */}
-      {/* 
-      {hlrData.length === 0 ? (
-        <p>Loading data ...</p>
-      ) : (
-        <>
-            <ChartLine data={hlrData} selectParam="temp" />
-            <br/>
-          <ChartLine data={hlrData} selectParam="co2" />
-        </>
-      )} */}
     </div>
   );
 };
 
 export default Home;
-// ปรับแก้ไข ประวัติตัวละคร Shinei Nouzen (Shin)
-
-// เขาเป็นขุนนางระดับล่างแต่อยู่ใน Hive world ณ ดาวดวงหนึ่ง เขาเป็นอัศวินที่มากฝีมือจากการออกทำสงครามหลาย ๆ ครั้งกับ Xenos รวมไปถึงผู้ทรยศ เคียงคู่กับ Kiriya Nouzen (Kiriya) ตั้งแต่อายุไม่ถึง 15 ปี  Kiriya หนึ่งในอัศวินส่วนตัวของลูกสาว High lord ผู้ว่าการดวงดาวและสนิทกันมาก และ Shin กับ Kiriya ถึงจะเป็นพี่น้องกันห่าง แต่พวกเขาก็เป็นคู่แข่งกันในด้านความสามารถ แต่ก็สนิทกันในเวลาเดียวกัน
-
-// เหตุการณ์เหมือนจะเป็นไปด้วยดี แต่การปฏิวัติจากภายในโดย Chaos ก็เกิดขึ้นเกิดการปะทะกันอย่างหนักน่วงกับผู้ทรยศ และเหล่า Geater deamon ก็โผล่มา Kiriya Nouzen  สู้จนตัวตายเพื่อปกป้อง ลูกสาว High lord  แน่นอนว่า Shin ติดอยู่ในอีกหลายแนวรบทำให้ไม่สามารถไปช่วยได้ทัน Kiriya Nouzen ก่อนตายโกรธทุกคน เขาคิดว่า IOM ทำการปฏิวัติจากภายใน และเขาสาบารว่าจะทำลายทำทุก

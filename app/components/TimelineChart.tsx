@@ -34,19 +34,12 @@ interface Props {
 }
 
 export default function TempLineChart({ data, selectParam }: Props) {
-  // State สำหรับเลือกระยะเวลา
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("17:00");
-
-  // 1) สร้างข้อมูลกราฟพร้อม Interpolate
   const interpolatedData = useMemo(() => {
-    // 1.1) สร้าง array ของ timestamp (string) ทั้งหมดแบบ unique
-    //      เช่น "7:05:03 AM" บ้าง หรือ "10:21:00 AM" บ้าง
     const allTimestamps = Array.from(
       new Set(data.map((d) => new Date(d.timestamp).toLocaleTimeString()))
     ).sort();
-
-    // 1.2) สร้าง object เพื่อเก็บข้อมูลแต่ละอุปกรณ์ตาม timestamp
     const deviceData: { [device: string]: { [ts: string]: number } } = {};
     data.forEach((d) => {
       const ts = new Date(d.timestamp).toLocaleTimeString();
