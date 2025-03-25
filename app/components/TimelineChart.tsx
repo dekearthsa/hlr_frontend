@@ -22,10 +22,9 @@ interface DataPoint {
   adjust_co2: string;
 }
 
-// รูปแบบข้อมูลของ Object หลัง grouped
 type GroupedEntry = {
   timestamp: string;
-  [deviceName: string]: number | string; // เช่น { timestamp: "07:00:00", tongdy_1: 500 }
+  [deviceName: string]: number | string;
 };
 
 interface Props {
@@ -36,13 +35,36 @@ interface Props {
 export default function TempLineChart({ data, selectParam }: Props) {
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("17:00");
+
   const interpolatedData = useMemo(() => {
+    // 1) สร้าง array timestamp ทั้งหมด (unique)
+    //    ใช้ 24 ชม. format เช่น "08:05:12"
     const allTimestamps = Array.from(
-      new Set(data.map((d) => new Date(d.timestamp).toLocaleTimeString()))
+      new Set(
+        data.map((d) =>
+          new Date(d.timestamp).toLocaleTimeString("en-GB", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })
+        )
+      )
     ).sort();
+
+    // 2) สร้าง object deviceData: device_name -> { timestamp -> value }
     const deviceData: { [device: string]: { [ts: string]: number } } = {};
+
     data.forEach((d) => {
-      const ts = new Date(d.timestamp).toLocaleTimeString();
+      // แปลง timestamp เป็น 24Hrs เช่น "13:05:01"
+      const ts = new Date(d.timestamp).toLocaleTimeString("en-GB", {
+        hour12: false,
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+
+      // เลือกค่า param
       const value =
         selectParam === "temp"
           ? d.temp
@@ -51,40 +73,41 @@ export default function TempLineChart({ data, selectParam }: Props) {
           : selectParam === "adjust_co2"
           ? parseInt(d.adjust_co2)
           : d.co2;
-      if (selectParam === "adjust_co2") {
-        console.log(value);
-      }
+
       if (!deviceData[d.device_name]) {
         deviceData[d.device_name] = {};
       }
       deviceData[d.device_name][ts] = value;
     });
+
+    // 3) Interpolate
     const result: GroupedEntry[] = allTimestamps.map((ts) => {
       const entry: GroupedEntry = { timestamp: ts };
+
+      // กำหนดอุปกรณ์
       ["tongdy_1", "tongdy_2", "tongdy_3", "tongdy_4"].forEach((device) => {
         const perDeviceData = deviceData[device] || {};
         if (perDeviceData[ts] !== undefined) {
-          // ถ้ามีค่าตรง ๆ
           entry[device] = perDeviceData[ts];
         } else {
-          // หาค่าก่อนหน้า-ถัดไป เพื่อ Interpolate
+          // หาค่าก่อนหน้าและถัดไป
           const timestamps = Object.keys(perDeviceData).sort();
           const prevTs = timestamps.filter((t) => t < ts).pop();
           const nextTs = timestamps.find((t) => t > ts);
 
           if (prevTs && nextTs) {
-            // กรณีมีทั้งก่อนหน้าและถัดไป → Interpolate
+            // Interpolate
             if (prevTs === nextTs) {
               entry[device] = perDeviceData[prevTs];
             } else {
               const prevValue = perDeviceData[prevTs];
               const nextValue = perDeviceData[nextTs];
               const timeDiff =
-                new Date(`1970-01-01 ${nextTs}`).getTime() -
-                new Date(`1970-01-01 ${prevTs}`).getTime();
+                new Date(`1970-01-01T${nextTs}`).getTime() -
+                new Date(`1970-01-01T${prevTs}`).getTime();
               const currentDiff =
-                new Date(`1970-01-01 ${ts}`).getTime() -
-                new Date(`1970-01-01 ${prevTs}`).getTime();
+                new Date(`1970-01-01T${ts}`).getTime() -
+                new Date(`1970-01-01T${prevTs}`).getTime();
               if (timeDiff !== 0) {
                 entry[device] =
                   prevValue +
@@ -107,16 +130,15 @@ export default function TempLineChart({ data, selectParam }: Props) {
     return result;
   }, [data, selectParam]);
 
-  // 2) กรองข้อมูลตามช่วงเวลา startTime - endTime
+  // 4) กรองข้อมูลตาม startTime / endTime (HH:mm)
   const filteredData = useMemo(() => {
-    // สมมติ interpolatedData[].timestamp = "7:05:03 AM"
-    // เราจะแปลงเป็น HH:mm แบบ 24 ชม. ก่อนเทียบ
-    // เพื่อให้เทียบกับ "07:00" - "08:59" ได้ง่าย
     return interpolatedData.filter((entry) => {
-      const dateObj = new Date(`1970-01-01 ${entry.timestamp}`);
+      // entry.timestamp เช่น "08:05:12"
+      const dateObj = new Date(`1970-01-01T${entry.timestamp}`);
       const hh = String(dateObj.getHours()).padStart(2, "0");
       const mm = String(dateObj.getMinutes()).padStart(2, "0");
       const hhmm = `${hh}:${mm}`;
+      // เทียบ "08:00" <= hhmm <= "17:00"
       return hhmm >= startTime && hhmm <= endTime;
     });
   }, [interpolatedData, startTime, endTime]);
@@ -148,7 +170,7 @@ export default function TempLineChart({ data, selectParam }: Props) {
         </label>
       </div>
 
-      {/* ส่วนกราฟ */}
+      {/* แสดงกราฟ */}
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={filteredData}>
           <CartesianGrid strokeDasharray="3 3" />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import TempLineChart from "./components/TimelineChart";
 import axios from "axios";
@@ -15,11 +16,16 @@ interface DataPoint {
 }
 
 const Home = () => {
+  const router = useRouter();
   const [hlrData, setHlrData] = useState<DataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   const [isYear, setYear] = useState("");
   const [isMonth, setMonth] = useState("");
   const [isDate, setDate] = useState("");
+
+  const navigateTo = (path: string) => {
+    router.push(path);
+  };
 
   const fetchFunc = async () => {
     try {
@@ -56,6 +62,16 @@ const Home = () => {
   }, []);
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <div className="w-full flex justify-end mr-10">
+        <button
+          className="w-[20%] bg-gray-600 rounded-lg h-[40px] hover:bg-gray-700"
+          onClick={() => {
+            navigateTo("/view/iaq");
+          }}
+        >
+          Dashboard IAQ
+        </button>
+      </div>
       <h1 className="text-xl font-bold mb-4">Dashboard HLR</h1>
       {loading ? (
         <div className="z-[-1] w-full opacity-50">
