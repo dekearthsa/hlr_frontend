@@ -74,12 +74,12 @@ const Home = () => {
       </div>
       <h1 className="text-xl font-bold mb-4">Dashboard HLR</h1>
       {loading ? (
-        <div className="z-[-1] w-full opacity-50">
+        <div className="z-[-1] w-full opacity-50 text-white">
           <div className="flex justify-around w-[80%]  m-auto">
             <div>
               <label className="mr-3">Year</label>
               <input
-                className="bg-gray-800 rounded-lg h-[40px]"
+                className="bg-gray-800 rounded-lg h-[40px]  text-white"
                 type="number"
                 value={isYear}
                 onChange={(e) => setYear(e.target.value)}
@@ -88,7 +88,7 @@ const Home = () => {
             <div>
               <label className="mr-3">Month</label>
               <input
-                className="bg-gray-800 rounded-lg h-[40px]"
+                className="bg-gray-800 rounded-lg h-[40px]  text-white"
                 type="number"
                 value={isMonth}
                 onChange={(e) => setMonth(e.target.value)}
@@ -97,7 +97,7 @@ const Home = () => {
             <div>
               <label className="mr-3">date</label>
               <input
-                className="bg-gray-800 rounded-lg h-[40px]"
+                className="bg-gray-800 rounded-lg h-[40px]  text-white"
                 type="number"
                 value={isDate}
                 onChange={(e) => setDate(e.target.value)}
@@ -106,7 +106,7 @@ const Home = () => {
           </div>
           <div className="w-full m-auto flex justify-center">
             <button
-              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700  mt-10"
+              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700  mt-10  text-white"
               onClick={handlerFetchData}
             >
               Submit
