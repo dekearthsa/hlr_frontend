@@ -119,10 +119,10 @@ const IAQDashboard = () => {
   }, []);
 
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <div className="w-full flex justify-end mr-10">
+    <div className="mt-10">
+      <div className="w-full flex justify-end ">
         <button
-          className="w-[20%] bg-gray-600 rounded-lg h-[40px] hover:bg-gray-700"
+          className="w-[20%] bg-gray-600 rounded-lg h-[40px] hover:bg-gray-700 mr-10"
           onClick={() => {
             navigateTo("/");
           }}
@@ -130,7 +130,7 @@ const IAQDashboard = () => {
           HLR IAQ
         </button>
       </div>
-      <h1 className="text-xl font-bold mb-4">Dashboard HLR</h1>
+      <h1 className="text-xl font-bold  text-center mt-10 mb-10">Dashboard IAQ</h1>
       {isLoading ? (
         <div className="z-[-1] w-full opacity-50 text-white">
           <div className="flex justify-around w-[80%]  m-auto">
@@ -204,7 +204,7 @@ const IAQDashboard = () => {
           </div>
           <div className="w-full m-auto flex justify-center">
             <button
-              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700 mt-10"
+              className="bg-gray-600 w-[10%] h-[40px] rounded-2xl hover:bg-gray-700 mt-[80px]"
               onClick={handlerFetchData}
             >
               Submit
@@ -213,46 +213,14 @@ const IAQDashboard = () => {
         </div>
       )}
       <div>
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="VOC" />
-        )}
-        {isLoading ? (
-          <p></p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="CO2" />
-        )}
-        {isLoading ? (
-          <p></p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="eVOC" />
-        )}
-        {isLoading ? (
-          <p></p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="Humid" />
-        )}
-        {isLoading ? (
-          <p></p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="Temp" />
-        )}
-        {isLoading ? (
-          <p></p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="PM2.5" />
-        )}
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="PM10" />
-        )}
-        {isLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <TimeLineChartIAQ data={isData} selectParam="CO" />
-        )}
+        {isData.length === 0 ? <p>Loading...</p>: <TimeLineChartIAQ data={isData} selectParam="VOC" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="CO2" />}
+        {isData.length === 0 ? <p></p>:<TimeLineChartIAQ data={isData} selectParam="eVOC" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="Humid" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="Temp" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="PM2.5" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="PM10" />}
+        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="CO" />}
       </div>
     </div>
   );
