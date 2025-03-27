@@ -30,6 +30,7 @@ type GroupedEntry = {
 interface Props {
   data: DataPoint[];
   selectParam: "temp" | "humid" | "co2" | "adjust_co2";
+  // pages: "HLR" | "IAQ";
 }
 
 export default function TempLineChart({ data, selectParam }: Props) {
@@ -37,8 +38,6 @@ export default function TempLineChart({ data, selectParam }: Props) {
   const [endTime, setEndTime] = useState("17:00");
 
   const interpolatedData = useMemo(() => {
-    // 1) สร้าง array timestamp ทั้งหมด (unique)
-    //    ใช้ 24 ชม. format เช่น "08:05:12"
     const allTimestamps = Array.from(
       new Set(
         data.map((d) =>
@@ -51,20 +50,16 @@ export default function TempLineChart({ data, selectParam }: Props) {
         )
       )
     ).sort();
-
-    // 2) สร้าง object deviceData: device_name -> { timestamp -> value }
+ 
     const deviceData: { [device: string]: { [ts: string]: number } } = {};
 
     data.forEach((d) => {
-      // แปลง timestamp เป็น 24Hrs เช่น "13:05:01"
       const ts = new Date(d.timestamp).toLocaleTimeString("en-GB", {
         hour12: false,
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       });
-
-      // เลือกค่า param
       const value =
         selectParam === "temp"
           ? d.temp
@@ -80,23 +75,18 @@ export default function TempLineChart({ data, selectParam }: Props) {
       deviceData[d.device_name][ts] = value;
     });
 
-    // 3) Interpolate
     const result: GroupedEntry[] = allTimestamps.map((ts) => {
       const entry: GroupedEntry = { timestamp: ts };
-
-      // กำหนดอุปกรณ์
       ["tongdy_1", "tongdy_2", "tongdy_3", "tongdy_4"].forEach((device) => {
         const perDeviceData = deviceData[device] || {};
         if (perDeviceData[ts] !== undefined) {
           entry[device] = perDeviceData[ts];
         } else {
-          // หาค่าก่อนหน้าและถัดไป
           const timestamps = Object.keys(perDeviceData).sort();
           const prevTs = timestamps.filter((t) => t < ts).pop();
           const nextTs = timestamps.find((t) => t > ts);
 
           if (prevTs && nextTs) {
-            // Interpolate
             if (prevTs === nextTs) {
               entry[device] = perDeviceData[prevTs];
             } else {
@@ -130,25 +120,19 @@ export default function TempLineChart({ data, selectParam }: Props) {
     return result;
   }, [data, selectParam]);
 
-  // 4) กรองข้อมูลตาม startTime / endTime (HH:mm)
   const filteredData = useMemo(() => {
     return interpolatedData.filter((entry) => {
-      // entry.timestamp เช่น "08:05:12"
       const dateObj = new Date(`1970-01-01T${entry.timestamp}`);
       const hh = String(dateObj.getHours()).padStart(2, "0");
       const mm = String(dateObj.getMinutes()).padStart(2, "0");
       const hhmm = `${hh}:${mm}`;
-      // เทียบ "08:00" <= hhmm <= "17:00"
       return hhmm >= startTime && hhmm <= endTime;
     });
   }, [interpolatedData, startTime, endTime]);
 
   return (
     <div className="w-full flex flex-col items-center gap-4">
-      {/* หัวข้อ */}
       <div className="text-center text-3xl mb-4">{selectParam}</div>
-
-      {/* ช่องเลือก Start-End Time */}
       <div className="flex gap-4 items-center mb-4">
         <label>
           Start Time:

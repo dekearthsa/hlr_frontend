@@ -33,7 +33,7 @@ const Home = () => {
       const day = d.getDate();
       const month = d.getMonth() + 1;
       const year = d.getFullYear();
-      console.log(day + " " + month + " " + year);
+      // console.log(day + " " + month + " " + year);
       const dataNow = await axios.get(
         `https://bkkcodedevearthregisterdemobkk.work/api/selected/${year}/${month}/${day}`
       );
