@@ -130,7 +130,9 @@ const IAQDashboard = () => {
           HLR IAQ
         </button>
       </div>
-      <h1 className="text-xl font-bold  text-center mt-10 mb-10">Dashboard IAQ</h1>
+      <h1 className="text-xl font-bold  text-center mt-10 mb-10">
+        Dashboard IAQ
+      </h1>
       {isLoading ? (
         <div className="z-[-1] w-full opacity-50 text-white">
           <div className="flex justify-around w-[80%]  m-auto">
@@ -212,15 +214,49 @@ const IAQDashboard = () => {
           </div>
         </div>
       )}
-      <div>
-        {isData.length === 0 ? <p>Loading...</p>: <TimeLineChartIAQ data={isData} selectParam="VOC" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="CO2" />}
-        {isData.length === 0 ? <p></p>:<TimeLineChartIAQ data={isData} selectParam="eVOC" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="Humid" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="Temp" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="PM2.5" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="PM10" />}
-        {isData.length === 0 ? <p></p>: <TimeLineChartIAQ data={isData} selectParam="CO" />}
+      <div className="text-center w-[100%] mt-10">
+        {isData.length === 0 ? (
+          <div className="text-center flex justify-center font-bold">
+            <div>Loading...</div>
+          </div>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="VOC" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="CO2" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="eVOC" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="Humid" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="Temp" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="PM2.5" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="PM10" />
+        )}
+        {isData.length === 0 ? (
+          <p></p>
+        ) : (
+          <TimeLineChartIAQ data={isData} selectParam="CO" />
+        )}
       </div>
     </div>
   );
