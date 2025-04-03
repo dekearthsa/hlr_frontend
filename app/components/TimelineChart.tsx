@@ -20,6 +20,7 @@ interface DataPoint {
   device_name: string;
   timestamp: string;
   adjust_co2: string;
+  device_name_label: string;
 }
 
 type GroupedEntry = {
@@ -50,7 +51,7 @@ export default function TempLineChart({ data, selectParam }: Props) {
         )
       )
     ).sort();
- 
+
     const deviceData: { [device: string]: { [ts: string]: number } } = {};
 
     data.forEach((d) => {
@@ -69,50 +70,52 @@ export default function TempLineChart({ data, selectParam }: Props) {
           ? parseInt(d.adjust_co2)
           : d.co2;
 
-      if (!deviceData[d.device_name]) {
-        deviceData[d.device_name] = {};
+      if (!deviceData[d.device_name_label]) {
+        deviceData[d.device_name_label] = {};
       }
-      deviceData[d.device_name][ts] = value;
+      deviceData[d.device_name_label][ts] = value;
     });
 
     const result: GroupedEntry[] = allTimestamps.map((ts) => {
       const entry: GroupedEntry = { timestamp: ts };
-      ["tongdy_1", "tongdy_2", "tongdy_3", "tongdy_4"].forEach((device) => {
-        const perDeviceData = deviceData[device] || {};
-        if (perDeviceData[ts] !== undefined) {
-          entry[device] = perDeviceData[ts];
-        } else {
-          const timestamps = Object.keys(perDeviceData).sort();
-          const prevTs = timestamps.filter((t) => t < ts).pop();
-          const nextTs = timestamps.find((t) => t > ts);
+      ["HLR intlet", "Carbon inlet", "Carbon Outlet", "HLR Exhaust"].forEach(
+        (device) => {
+          const perDeviceData = deviceData[device] || {};
+          if (perDeviceData[ts] !== undefined) {
+            entry[device] = perDeviceData[ts];
+          } else {
+            const timestamps = Object.keys(perDeviceData).sort();
+            const prevTs = timestamps.filter((t) => t < ts).pop();
+            const nextTs = timestamps.find((t) => t > ts);
 
-          if (prevTs && nextTs) {
-            if (prevTs === nextTs) {
-              entry[device] = perDeviceData[prevTs];
-            } else {
-              const prevValue = perDeviceData[prevTs];
-              const nextValue = perDeviceData[nextTs];
-              const timeDiff =
-                new Date(`1970-01-01T${nextTs}`).getTime() -
-                new Date(`1970-01-01T${prevTs}`).getTime();
-              const currentDiff =
-                new Date(`1970-01-01T${ts}`).getTime() -
-                new Date(`1970-01-01T${prevTs}`).getTime();
-              if (timeDiff !== 0) {
-                entry[device] =
-                  prevValue +
-                  (nextValue - prevValue) * (currentDiff / timeDiff);
+            if (prevTs && nextTs) {
+              if (prevTs === nextTs) {
+                entry[device] = perDeviceData[prevTs];
               } else {
-                entry[device] = prevValue;
+                const prevValue = perDeviceData[prevTs];
+                const nextValue = perDeviceData[nextTs];
+                const timeDiff =
+                  new Date(`1970-01-01T${nextTs}`).getTime() -
+                  new Date(`1970-01-01T${prevTs}`).getTime();
+                const currentDiff =
+                  new Date(`1970-01-01T${ts}`).getTime() -
+                  new Date(`1970-01-01T${prevTs}`).getTime();
+                if (timeDiff !== 0) {
+                  entry[device] =
+                    prevValue +
+                    (nextValue - prevValue) * (currentDiff / timeDiff);
+                } else {
+                  entry[device] = prevValue;
+                }
               }
+            } else if (prevTs) {
+              entry[device] = perDeviceData[prevTs];
+            } else if (nextTs) {
+              entry[device] = perDeviceData[nextTs];
             }
-          } else if (prevTs) {
-            entry[device] = perDeviceData[prevTs];
-          } else if (nextTs) {
-            entry[device] = perDeviceData[nextTs];
           }
         }
-      });
+      );
 
       return entry;
     });
@@ -177,25 +180,25 @@ export default function TempLineChart({ data, selectParam }: Props) {
           <Legend />
           <Line
             type="monotone"
-            dataKey="tongdy_1"
+            dataKey="HLR intlet"
             stroke="#8884d8"
             dot={false}
           />
           <Line
             type="monotone"
-            dataKey="tongdy_2"
+            dataKey="Carbon inlet"
             stroke="#82ca9d"
             dot={false}
           />
           <Line
             type="monotone"
-            dataKey="tongdy_3"
+            dataKey="Carbon Outlet"
             stroke="#ffc658"
             dot={false}
           />
           <Line
             type="monotone"
-            dataKey="tongdy_4"
+            dataKey="HLR Exhaust"
             stroke="#ff7300"
             dot={false}
           />

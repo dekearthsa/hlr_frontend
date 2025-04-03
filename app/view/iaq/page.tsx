@@ -44,6 +44,7 @@ const IAQDashboard = () => {
   const [isYear, setYear] = useState("");
   const [isMonth, setMonth] = useState("");
   const [isDate, setDate] = useState("");
+  const [isAuto, setAuto] = useState(false);
 
   const getUniqueBy = <T extends keyof DataItem>(
     array: DataItem[],
@@ -110,6 +111,7 @@ const IAQDashboard = () => {
     );
     setData(data.data);
     setLoading(false);
+    setAuto(true);
   };
 
   useEffect(() => {
@@ -117,6 +119,28 @@ const IAQDashboard = () => {
     fetchIAQData();
     setLoading(false);
   }, []);
+
+  // const autosUpdate = async () => {
+  //   const header = { "ngrok-skip-browser-warning": "skip" };
+  //   const data = await axios.get(
+  //     `${static_api}/${isYear}/${isMonth}/${isDate}`,
+  //     {
+  //       headers: header,
+  //     }
+  //   );
+  //   const uniqueData: DataPoint[] = getUniqueBy(data.data, "strDatetime");
+  //   setData(uniqueData);
+  // };
+
+  // useEffect(() => {
+  //   if (isAuto) {
+  //     // autosUpdate();
+  //     setInterval(() => {
+  //       console.log("Update!");
+  //       autosUpdate();
+  //     }, 60000);
+  //   }
+  // }, [isAuto, isYear, isMonth, isDate]);
 
   return (
     <div className="mt-10">
