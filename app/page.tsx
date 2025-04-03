@@ -13,6 +13,7 @@ interface DataPoint {
   device_name: string;
   timestamp: string;
   adjust_co2: string;
+  device_name_label: string;
 }
 
 const Home = () => {

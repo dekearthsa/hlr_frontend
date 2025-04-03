@@ -44,7 +44,7 @@ const IAQDashboard = () => {
   const [isYear, setYear] = useState("");
   const [isMonth, setMonth] = useState("");
   const [isDate, setDate] = useState("");
-  const [isAuto, setAuto] = useState(false);
+  // const [isAuto, setAuto] = useState(false);
 
   const getUniqueBy = <T extends keyof DataItem>(
     array: DataItem[],
@@ -111,7 +111,7 @@ const IAQDashboard = () => {
     );
     setData(data.data);
     setLoading(false);
-    setAuto(true);
+    // setAuto(true);
   };
 
   useEffect(() => {
