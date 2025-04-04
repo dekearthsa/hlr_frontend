@@ -49,6 +49,23 @@ const Home = () => {
     }
   };
 
+  const autosUpdate = async () => {
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+
+    try {
+      const dataNow = await axios.get(
+        `https://bkkcodedevearthregisterdemobkk.work/api/selected/${year}/${month}/${day}`
+      );
+
+      setHlrData(dataNow.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handlerFetchData = async () => {
     setLoading(true);
     const dataNow = await axios.get(
@@ -58,9 +75,20 @@ const Home = () => {
     setLoading(false);
   };
 
+  useEffect(() => {}, [hlrData]);
+
   useEffect(() => {
-    fetchFunc();
+    const fetchDataFirstTime = async () => {
+      await fetchFunc();
+    };
+    fetchDataFirstTime();
+    const intervalID = setInterval(() => {
+      // console.log("Update by interval...");
+      autosUpdate();
+    }, 60000);
+    return () => clearInterval(intervalID);
   }, []);
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="w-full flex justify-end mr-10">

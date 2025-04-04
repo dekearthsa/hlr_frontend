@@ -40,11 +40,10 @@ const IAQDashboard = () => {
   };
 
   const [isData, setData] = useState<DataPoint[]>([]);
-  const [isLoading, setLoading] = useState(true);
+  const [isLoading, setLoading] = useState(false);
   const [isYear, setYear] = useState("");
   const [isMonth, setMonth] = useState("");
   const [isDate, setDate] = useState("");
-  // const [isAuto, setAuto] = useState(false);
 
   const getUniqueBy = <T extends keyof DataItem>(
     array: DataItem[],
@@ -59,10 +58,8 @@ const IAQDashboard = () => {
         const dt = DateTime.fromFormat(String(value), "dd/MM/yy HH:mm", {
           zone: "Asia/Bangkok",
         });
-        // console.log(dt.toUTC().toISO());
         const isoUtc = dt.toUTC().toISO();
         seen.add(value);
-
         const cleanTimestamp = {
           id: item.id,
           strDatetime: item.strDatetime,
@@ -76,71 +73,86 @@ const IAQDashboard = () => {
           CO: item.CO,
           timestamp: String(isoUtc),
         };
-
         result.push(cleanTimestamp);
       }
     }
-
     return result;
   };
 
+  useEffect(() => {}, [isData]);
+
+  useEffect(() => {
+    const fetchDataFirstTime = async () => {
+      setLoading(true);
+      await fetchIAQData();
+      setLoading(false);
+    };
+    fetchDataFirstTime();
+
+    const intervalId = setInterval(() => {
+      // console.log("Update by interval...");
+      autosUpdate();
+    }, 180000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const fetchIAQData = async () => {
-    const d = new Date();
-    const day = d.getDate();
-    const month = d.getMonth() + 1;
-    const year = d.getFullYear();
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
     const header = { "ngrok-skip-browser-warning": "skip" };
 
-    const data = await axios.get(`${static_api}/${year}/${month}/${day}`, {
+    const { data } = await axios.get(`${static_api}/${year}/${month}/${day}`, {
       headers: header,
     });
-    const uniqueData: DataPoint[] = getUniqueBy(data.data, "strDatetime");
-    console.log(uniqueData);
+    const uniqueData: DataPoint[] = getUniqueBy(data, "strDatetime");
     setData(uniqueData);
   };
 
+  const autosUpdate = async () => {
+    const header = { "ngrok-skip-browser-warning": "skip" };
+    const now = new Date();
+    const day = now.getDate();
+    const month = now.getMonth() + 1;
+    const year = now.getFullYear();
+
+    try {
+      const { data } = await axios.get(
+        `${static_api}/${year}/${month}/${day}`,
+        { headers: header }
+      );
+      const uniqueData: DataPoint[] = getUniqueBy(data, "strDatetime");
+      setData(uniqueData);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handlerFetchData = async () => {
+    if (!isYear || !isMonth || !isDate) {
+      alert("กรุณากรอก Year / Month / Date ให้ครบก่อน");
+      return;
+    }
     setLoading(true);
     const header = { "ngrok-skip-browser-warning": "skip" };
 
-    const data = await axios.get(
-      `${static_api}/${isYear}/${isMonth}/${isDate}`,
-      {
-        headers: header,
-      }
-    );
-    setData(data.data);
-    setLoading(false);
-    // setAuto(true);
+    try {
+      const { data } = await axios.get(
+        `${static_api}/${isYear}/${isMonth}/${isDate}`,
+        {
+          headers: header,
+        }
+      );
+      const uniqueData: DataPoint[] = getUniqueBy(data, "strDatetime");
+      setData(uniqueData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
-
-  useEffect(() => {
-    setLoading(true);
-    fetchIAQData();
-    setLoading(false);
-  }, []);
-
-  // const autosUpdate = async () => {
-  //   const header = { "ngrok-skip-browser-warning": "skip" };
-  //   const data = await axios.get(
-  //     `${static_api}/${isYear}/${isMonth}/${isDate}`,
-  //     {
-  //       headers: header,
-  //     }
-  //   );
-  //   const uniqueData: DataPoint[] = getUniqueBy(data.data, "strDatetime");
-  //   setData(uniqueData);
-  // };
-
-  // useEffect(() => {
-  //   if (isAuto) {
-  //     // autosUpdate();
-  //     setInterval(() => {
-  //       console.log("Update!");
-  //       autosUpdate();
-  //     }, 60000);
-  //   }
-  // }, [isAuto, isYear, isMonth, isDate]);
 
   return (
     <div className="mt-10">

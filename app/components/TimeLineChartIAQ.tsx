@@ -15,7 +15,7 @@ import { useMemo, useState } from "react";
 interface DataPoint {
   id: number;
   strDatetime: string;
-  timestamp: string; // e.g. "2025-03-26T18:40:00.000Z"
+  timestamp: string; 
   VOC: number;
   CO2: number;
   eVOC: number;
@@ -26,7 +26,7 @@ interface DataPoint {
   CO: number;
 }
 
-// Possible fields to chart
+
 interface Props {
   data: DataPoint[];
   selectParam:
@@ -44,10 +44,8 @@ export default function TimeLineChartIAQ({ data, selectParam }: Props) {
   const [startTime, setStartTime] = useState("08:00");
   const [endTime, setEndTime] = useState("17:00");
 
-  // 1) Build an array of { time: "HH:mm:ss", paramValue: number }
   const chartData = useMemo(() => {
     return data.map((d) => {
-      // Format timestamp to HH:mm:ss
       const timeStr = new Date(d.timestamp).toLocaleTimeString("en-GB", {
         hour12: false,
         hour: "2-digit",
@@ -55,7 +53,6 @@ export default function TimeLineChartIAQ({ data, selectParam }: Props) {
         second: "2-digit",
       });
 
-      // Pick which field we want as Y-value
       const paramValue =
         selectParam === "VOC"
           ? d.VOC
@@ -80,7 +77,6 @@ export default function TimeLineChartIAQ({ data, selectParam }: Props) {
     });
   }, [data, selectParam]);
 
-  // 2) Filter by startTime/endTime
   const filteredData = useMemo(() => {
     return chartData.filter((entry) => {
       const dateObj = new Date(`1970-01-01T${entry.time}`);
