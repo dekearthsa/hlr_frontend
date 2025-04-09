@@ -32,7 +32,7 @@ interface DataPoint {
   CO: number;
 }
 
-const static_api = "https://3a7d-1-46-81-64.ngrok-free.app/api/selected";
+const static_api = "https://73e0-1-46-83-73.ngrok-free.app/api/selected";
 const IAQDashboard = () => {
   const router = useRouter();
   const navigateTo = (path: string) => {
